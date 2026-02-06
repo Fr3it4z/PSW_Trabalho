@@ -1,0 +1,21 @@
+# --- Dependências (O mais importante) ---
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# --- Ficheiros de Sistema Operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Definições de Editores (VS Code, etc) ---
+.vscode/
+.idea/
+
+# --- Variáveis de Ambiente (Segurança) ---
+.env
+
+# --- Relatórios e PDFs  ---
+# Se quiseres guardar o relatório no Git, apaga a linha de baixo.
+# Se quiseres que o Git tenha SÓ código, deixa estar.
+*.pdf
+*.zip

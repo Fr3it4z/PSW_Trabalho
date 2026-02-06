@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestão de Filmes</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav>
+      <div>
+        <a href="/dashboard.html">Meus Filmes</a>
+        <a href="/manage.html"><b>Gestão de Filmes</b></a>
+        <a href="/stats.html">Estatísticas</a>
+      </div>
+      <button onclick="logout()">Sair</button>
+    </nav>
+    <hr />
+
+    <h2>Adicionar Novo Filme</h2>
+    <div
+      style="
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <input type="text" id="title" placeholder="Título (ex: Matrix)" />
+      <input type="text" id="director" placeholder="Realizador" />
+      <input type="number" id="year" placeholder="Ano" />
+      <input type="text" id="genre" placeholder="Género" />
+      <button onclick="addMovie()">+ Adicionar Filme</button>
+    </div>
+
+    <h2>Catálogo Global</h2>
+    <p><i>Adiciona filmes aqui para aparecerem no teu Dashboard.</i></p>
+    <ul id="all-movies">
+      A carregar lista...
+    </ul>
+
+    <script>
+      // Função Logout
+      function logout() {
+        fetch("/auth/logout", { method: "POST" }).then(function () {
+          window.location.href = "/";
+        });
+      }
+
+      // Carregar Filmes
+      function loadMovies() {
+        fetch("/api/movies")
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (movies) {
+            const list = document.getElementById("all-movies");
+
+            if (movies.length === 0) {
+              list.innerHTML = "<li>O catálogo está vazio.</li>";
+              return;
+            }
+
+            // Cria o HTML da lista
+            const html = movies
+              .map(function (m) {
+                return (
+                  "<li>" +
+                  "<span><b>" +
+                  m.title +
+                  "</b> (" +
+                  m.year +
+                  ") - " +
+                  m.director +
+                  "</span>" +
+                  "<div>" +
+                  // Botão Coração
+                  '<button onclick="addToMyList(' +
+                  m.id +
+                  ')" style="margin-right:5px; background-color: #27ae60;">❤ Adicionar aos Meus</button>' +
+                  // Botão Apagar
+                  '<button onclick="deleteMovie(' +
+                  m.id +
+                  ')" class="danger">Apagar</button>' +
+                  "</div>" +
+                  "</li>"
+                );
+              })
+              .join("");
+
+            list.innerHTML = html;
+          })
+          .catch(function (err) {
+            console.error(err);
+            document.getElementById("all-movies").innerHTML =
+              "Erro ao carregar dados.";
+          });
+      }
+
+      // Adicionar Filme
+      function addMovie() {
+        const title = document.getElementById("title").value;
+        const director = document.getElementById("director").value;
+        const year = document.getElementById("year").value;
+        const genre = document.getElementById("genre").value;
+
+        if (!title || !director)
+          return alert("Preenche pelo menos Título e Realizador!");
+
+        fetch("/api/movies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title,
+            director: director,
+            year: year,
+            genre: genre,
+          }),
+        })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function () {
+            // Limpar campos
+            document.getElementById("title").value = "";
+            document.getElementById("director").value = "";
+            document.getElementById("year").value = "";
+            document.getElementById("genre").value = "";
+            loadMovies(); // Atualiza a lista
+          });
+      }
+
+      // Adicionar aos Favoritos
+      function addToMyList(id) {
+        fetch("/api/my-movies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ movieId: id }),
+        }).then(function () {
+          alert("Filme adicionado ao teu Dashboard!");
+        });
+      }
+
+      // Apagar Filme
+      function deleteMovie(id) {
+        if (confirm("Tens a certeza que queres apagar este filme?")) {
+          fetch("/api/movies/" + id, { method: "DELETE" }).then(function () {
+            loadMovies();
+          });
+        }
+      }
+
+      // Iniciar
+      loadMovies();
+    </script>
+  </body>
+</html>

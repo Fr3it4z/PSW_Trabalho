@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Filmes - Login</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Bem-vindo à Gestão de Filmes</h1>
+
+    <div id="login-form">
+      <h2>Entrar no Sistema</h2>
+      <input type="text" id="user" placeholder="Username" />
+      <input type="password" id="pass" placeholder="Password" />
+      <br /><br />
+      <button onclick="login()">Login</button>
+      <button onclick="register()">Registar Nova Conta</button>
+    </div>
+
+    <script>
+      // --- Lógica de Login ---
+      function login() {
+        const username = document.getElementById("user").value;
+        const password = document.getElementById("pass").value;
+
+        fetch("/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username, password: password }),
+        })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (data.success) {
+              window.location.href = "/dashboard.html";
+            } else {
+              alert("Erro: Credenciais erradas!");
+            }
+          })
+          .catch(function (err) {
+            console.error("Erro no fetch:", err);
+          });
+      }
+
+      // --- Lógica de Registo ---
+      function register() {
+        const username = document.getElementById("user").value;
+        const password = document.getElementById("pass").value;
+
+        fetch("/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username, password: password }),
+        })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (data.success) {
+              alert("Conta criada! Podes fazer login.");
+            } else {
+              alert(
+                "Erro ao criar conta: " + (data.message || "Erro desconhecido")
+              );
+            }
+          })
+          .catch(function (err) {
+            console.error("Erro no fetch:", err);
+          });
+      }
+    </script>
+  </body>
+</html>

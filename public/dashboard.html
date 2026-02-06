@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <title>O Meu Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav>
+      <div>
+        <a href="/dashboard.html"><b>Meus Filmes</b></a>
+        <a href="/manage.html">Gestão de Filmes</a>
+        <a href="/stats.html">Estatísticas</a>
+      </div>
+      <button onclick="logout()">Sair</button>
+    </nav>
+    <hr />
+    <h1>Olá! Estes são os teus filmes selecionados:</h1>
+    <ul id="my-list">
+      <li>A carregar filmes...</li>
+    </ul>
+
+    <script>
+      // --- Logout Global (Promise pura) ---
+      function logout() {
+        fetch("/auth/logout", { method: "POST" })
+          .then(function () {
+            window.location.href = "/";
+          })
+          .catch(function () {
+            window.location.href = "/";
+          });
+      }
+
+      // --- Carregar Filmes do Utilizador ---
+      function loadMyMovies() {
+        fetch("/api/my-movies")
+          .then(function (res) {
+            if (res.status === 403) {
+              // Se não estiver logado, manda para a rua
+              window.location.href = "/";
+              return null; // Interrompe a cadeia
+            }
+            return res.json();
+          })
+          .then(function (movies) {
+            // Se for null (erro de login), não faz nada
+            if (!movies) return;
+
+            const list = document.getElementById("my-list");
+
+            if (movies.length === 0) {
+              list.innerHTML =
+                '<li>Ainda não tens favoritos. Vai a "Gestão" adicionar!</li>';
+            } else {
+              // Cria o HTML da lista
+              const html = movies
+                .map(function (m) {
+                  return (
+                    "<li>" +
+                    m.title +
+                    " (" +
+                    m.year +
+                    ") - " +
+                    m.director +
+                    "</li>"
+                  );
+                })
+                .join("");
+              list.innerHTML = html;
+            }
+          })
+          .catch(function (err) {
+            console.error("Erro ao carregar:", err);
+            document.getElementById("my-list").innerHTML =
+              "<li>Erro ao carregar dados.</li>";
+          });
+      }
+
+      // Arranca a função quando a página abre
+      loadMyMovies();
+    </script>
+  </body>
+</html>
